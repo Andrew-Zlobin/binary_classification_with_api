@@ -9,24 +9,116 @@ import {
   ScrollView,
 } from 'react-native';
 
+// side packages
+import { Picker } from '@react-native-picker/picker';
+
 const mockData = Array.from({ length: 20 }, (_, i) => ({
   id: `${i}`,
   name: `Элемент ${i + 1}`,
   value: Math.floor(Math.random() * 100),
 }));
 
+const inputParameters = [
+  {
+    id: "Gender",
+    type: "dropdown",
+    label: "Gender",
+    possibleValues: ["Male", "Female"],
+    value: "Male",
+  },
+  {
+    id: "Age",
+    type: "input",
+    label: "Age",
+    value: '',
+  },
+  {
+    id: "Driving_License",
+    type: "dropdown",
+    label: "Driving license",
+    possibleValues: ["Yes", "No"],
+    value: "Yes",
+  },
+
+  {
+    id: "Region_Code",
+    type: "input",
+    label: "Region code",
+    value: '',
+  },
+
+  {
+    id: "Previously_Insured",
+    type: "dropdown",
+    label: "Previously Insured",
+    possibleValues: ["Yes", "No"],
+    value: "Yes",
+  },
+
+  {
+    id: "Vehicle_Age",
+    type: "dropdown",
+    label: "Vehicle Age",
+    possibleValues: ["1-2 Year", "< 1 Year", "> 2 Years"],
+    value: "< 1 Year",
+  },
+  {
+    id: "Vehicle_Damage",
+    type: "dropdown",
+    label: "Vehicle Damage",
+    possibleValues: ["Yes", "No"],
+    value: "Yes",
+  },
+
+  {
+    id: "Annual_Premium",
+    type: "input",
+    label: "Annual Premium",
+    value: '',
+  },
+  {
+    id: "Policy_Sales_Channel",
+    type: "input",
+    label: "Policy Sales Channel",
+    value: '',
+  },
+  {
+    id: "Vintage",
+    type: "input",
+    label: "Vintage",
+    value: '',
+  },
+];
+
 export default function App() {
-  const [text, setText] = useState('');
+  const [fields, setFields] = useState(inputParameters);
+
+  const handleChange = (text, id) => {
+    setFields((prev) =>
+      prev.map((field, index) => (index === id ? { ...field, value: text } : field))
+    );
+  };
+
+  const [selectedOption, setSelectedOption] = useState('option1');
+
   const [data, setData] = useState(mockData);
 
   const handlePress = () => {
-    const newItem = {
-      id: Date.now().toString(),
-      name: text || `Новый элемент`,
-      value: Math.floor(Math.random() * 100),
-    };
-    setData([newItem, ...data]);
-    setText('');
+    let dataToSend = fields.reduce((acc, elem) => {
+      acc[elem.id] = (elem.type == "input") ? parseInt(elem.value) : elem.value;
+      return acc
+    }, {}); 
+
+    fetch("http://127.0.0.1:8000/predict", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(dataToSend),
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
   };
 
   const renderItem = ({ item }) => (
@@ -39,12 +131,34 @@ export default function App() {
   return (
     <View style={styles.root}>
       <View style={styles.leftPanel}>
-        <TextInput
-          style={styles.input}
-          placeholder="Введите текст"
-          value={text}
-          onChangeText={setText}
-        />
+
+
+        {fields.map((field, index) => (
+        
+          (field.type  == "input") ? <View key={index} style={styles.inputContainer}>
+            <Text style={styles.inputLabelContainer}>{field.label}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Введите число"
+              value={field.value}
+              onChangeText={(text)=>handleChange(text.replace(/[^0-9]/g, ''), index)}//{setText}
+            />
+          </View> : <View key={index} style={styles.inputContainer}>
+            <Text style={styles.inputLabelContainer}>{field.label}</Text>
+            <View style={styles.pickerWrapper}>
+              <Picker
+                selectedValue={field.value}
+                onValueChange={(itemValue) => handleChange(itemValue, index)}
+                style={styles.picker}
+              >
+                {field.possibleValues.map((option, index) => (<Picker.Item label={option} value={option} />))}
+                
+              </Picker>
+            </View>
+          </View>
+      ))}
+
+
         <TouchableOpacity style={styles.button} onPress={handlePress}>
           <Text style={styles.buttonText}>Отправить</Text>
         </TouchableOpacity>
@@ -82,19 +196,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 100,
   },
+  inputContainer : {
+    flexDirection: 'row',
+    // justifyContent: 'center',
+    // alignItems: 'center',
+    width:"100%",
+  },
+  inputLabelContainer: {
+    width: 300,
+    height:"100%",
+    padding: 15,
+    // padding: 10,
+    // fontSize: 20,
+  },
   input: {
-    width: '100%',
+    width: 500,
+    height: 50,
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 10,
     marginBottom: 20,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   button: {
     width: '100%',
     backgroundColor: '#007AFF',
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
   },
   buttonText: {
@@ -124,5 +252,24 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontWeight: 'bold',
+  },
+  pickerWrapper: {
+    width: 275,
+    // borderWidth: 1,
+    // borderColor: '#000',
+    borderRadius: 10,
+    marginBottom: 20,
+    // overflow: 'hidden',
+  },
+  picker: {
+    width: '100%',
+    height: 50,
+    borderColor: "#000",
+    borderRadius: 8,
+    boxShadow: "none",
+    // border
+    // color: 'fff',
+    // color: '#007AFF',
+    backgroundColor: '#fff',
   },
 });
