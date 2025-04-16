@@ -8,6 +8,9 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from model import Model
 
+import pandas as pd
+
+
 class PredictionRequest(BaseModel):
     Gender: str
     Age : int
@@ -47,7 +50,7 @@ def read_root():
 
 @app.post("/predict")
 async def predict(predictionRequest : PredictionRequest):
-    
+
     print(predictionRequest.Age)
     return {"status": "ok", "prediction" : 1}#context_instances["classification"].predict(predictionRequest)}
 
