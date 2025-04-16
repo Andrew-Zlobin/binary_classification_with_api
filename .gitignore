@@ -1,3 +1,4 @@
 server/__pycache__/api.cpython-312.pyc
 server/train.csv
 server/__pycache__/model.cpython-312.pyc
+server/server_env
