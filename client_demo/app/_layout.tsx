@@ -12,11 +12,11 @@ import {
 // side packages
 import { Picker } from '@react-native-picker/picker';
 
-const mockData = Array.from({ length: 20 }, (_, i) => ({
-  id: `${i}`,
-  name: `Элемент ${i + 1}`,
-  value: Math.floor(Math.random() * 100),
-}));
+// const mockData = Array.from({ length: 20 }, (_, i) => ({
+//   id: `${i}`,
+//   name: `Элемент ${i + 1}`,
+//   value: Math.floor(Math.random() * 100),
+// }));
 
 const inputParameters = [
   {
@@ -101,7 +101,7 @@ export default function App() {
 
   const [selectedOption, setSelectedOption] = useState('option1');
 
-  const [data, setData] = useState(mockData);
+  const [data, setData] = useState([]);//mockData);
 
   const handlePress = () => {
     let dataToSend = fields.reduce((acc, elem) => {
@@ -109,7 +109,8 @@ export default function App() {
       return acc
     }, {}); 
 
-    fetch("http://127.0.0.1:8000/predict", {
+    // fetch("http://host.docker.internal:8000/predict", {
+    fetch("http://localhost:8000/predict", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -117,7 +118,24 @@ export default function App() {
       body: JSON.stringify(dataToSend),
     })
     .then(response => response.json())
-    .then(data => console.log(data))
+    .then(response => {
+      console.log(data)
+      if (response.status == "ok") {
+        let dataToDisplay = fields.reduce((acc, elem) => {
+          acc[elem.id] = (elem.type == "input") ? parseInt(elem.value) : elem.value;
+          return acc
+        }, {}); 
+        const newItem = {
+          id: Date.now().toString(),
+          name: Object.entries(dataToDisplay)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join('\n'),
+          value: response.prediction,
+        };
+        setData([newItem, ...data]);
+      }
+
+    })
     .catch(error => console.error(error));
   };
 
@@ -137,12 +155,14 @@ export default function App() {
         
           (field.type  == "input") ? <View key={index} style={styles.inputContainer}>
             <Text style={styles.inputLabelContainer}>{field.label}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Введите число"
-              value={field.value}
-              onChangeText={(text)=>handleChange(text.replace(/[^0-9]/g, ''), index)}//{setText}
-            />
+              <View style={styles.uniformInputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Введите число"
+                value={field.value}
+                onChangeText={(text)=>handleChange(text.replace(/[^0-9]/g, ''), index)}//{setText}
+              />
+            </View> 
           </View> : <View key={index} style={styles.inputContainer}>
             <Text style={styles.inputLabelContainer}>{field.label}</Text>
             <View style={styles.pickerWrapper}>
@@ -194,12 +214,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 100,
+    padding: "5%",
+    // padding: 50,
   },
   inputContainer : {
     flexDirection: 'row',
     // justifyContent: 'center',
     // alignItems: 'center',
+    marginBottom: 20,
     width:"100%",
   },
   inputLabelContainer: {
@@ -209,15 +231,7 @@ const styles = StyleSheet.create({
     // padding: 10,
     // fontSize: 20,
   },
-  input: {
-    width: 500,
-    height: 50,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    marginBottom: 20,
-    borderRadius: 10,
-  },
+
   button: {
     width: '100%',
     backgroundColor: '#007AFF',
@@ -231,7 +245,8 @@ const styles = StyleSheet.create({
   },
   rightPanel: {
     flex: 1,
-    padding: 100,
+    // padding: 50,
+    padding: "5%",
   },
   headerRow: {
     flexDirection: 'row',
@@ -253,23 +268,71 @@ const styles = StyleSheet.create({
   headerText: {
     fontWeight: 'bold',
   },
-  pickerWrapper: {
-    width: 275,
-    // borderWidth: 1,
-    // borderColor: '#000',
+  // pickerWrapper: {
+  //   width: 275,
+  //   // borderWidth: 1,
+  //   // borderColor: '#000',
+  //   borderRadius: 10,
+  //   marginBottom: 20,
+  //   // overflow: 'hidden',
+  // },
+  // picker: {
+  //   width: '100%',
+  //   height: 50,
+  //   borderColor: "#000",
+  //   borderRadius: 8,
+  //   boxShadow: "none",
+  //   // border
+  //   // color: 'fff',
+  //   // color: '#007AFF',
+  //   backgroundColor: '#fff',
+  // },
+  // input: {
+  //   width: 500,
+  //   height: 50,
+  //   borderWidth: 1,
+  //   borderColor: '#ccc',
+  //   padding: 10,
+  //   marginBottom: 20,
+  //   borderRadius: 10,
+  // },
+  // pickerWrapper: {
+  //   width: 500,
+  //   height: 50,
+  //   borderWidth: 1,
+  //   borderColor: '#ccc',
+  //   borderRadius: 10,
+  //   marginBottom: 20,
+  //   justifyContent: 'center',
+  // },
+  // picker: {
+  //   width: '100%',
+  //   height: '100%',
+  // },
+  uniformInputWrapper: {
+    width: 200,
+    height: 50,
+    borderWidth: 1,
+    borderColor: '#ccc',
     borderRadius: 10,
-    marginBottom: 20,
-    // overflow: 'hidden',
+    // marginBottom: 20,
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#000', 
   },
   picker: {
-    width: '100%',
-    height: 50,
-    borderColor: "#000",
-    borderRadius: 8,
-    boxShadow: "none",
-    // border
-    // color: 'fff',
-    // color: '#007AFF',
+    // width: "100%",
+    width: 200,
+    height:"100%",
+    borderRadius:10,
+    color: '#000',
+    
     backgroundColor: '#fff',
+    // flex: 1,
   },
 });

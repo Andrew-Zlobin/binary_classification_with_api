@@ -1,0 +1,27 @@
+services:
+  client:
+    build:
+      context: ./client_demo
+    ports:
+      - "8081:8081"
+      - "19000:19000"
+      - "19001:19001"
+      - "19002:19002"
+      - "19006:19006"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: ./client_demo
+  
+  server:
+    build:
+      context: ./server
+    ports:
+      - "8000:8000"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /server
+  

@@ -1,10 +1,12 @@
 from typing import Union
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-
+from model import Model
 
 class PredictionRequest(BaseModel):
     Gender: str
@@ -19,20 +21,19 @@ class PredictionRequest(BaseModel):
     Vintage : int
     # value : str
 
+context_instances = {}
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    context_instances["classification"] = Model()
+    yield
+
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        # '*'
-        "http://localhost",
-        "http://127.0.0.1",
-        "http://127.0.1.1",
-        "http://172.30.16.1"
-        "http://localhost:19006",
-        "http://localhost:8081",
-        "http://localhost:8000",
+        '*'
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -46,7 +47,9 @@ def read_root():
 
 @app.post("/predict")
 async def predict(predictionRequest : PredictionRequest):
+    
     print(predictionRequest.Age)
+    return {"status": "ok", "prediction" : 1}#context_instances["classification"].predict(predictionRequest)}
 
 
 @app.get("/items/{item_id}")
