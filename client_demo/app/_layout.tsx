@@ -108,7 +108,13 @@ export default function App() {
       acc[elem.id] = (elem.type == "input") ? parseInt(elem.value) : elem.value;
       return acc
     }, {}); 
-
+    dataToSend["id"] = 0;
+    dataToSend["Driving_License"] = dataToSend["Driving_License"] == "Yes" ? 1 : 0;
+    dataToSend["Region_Code"] = parseFloat(dataToSend["Region_Code"]);
+    dataToSend["Previously_Insured"] = dataToSend["Previously_Insured"] == "Yes" ? 1 : 0;
+    dataToSend["Annual_Premium"] = parseFloat(dataToSend["Annual_Premium"]);
+    dataToSend["Policy_Sales_Channel"] = parseFloat(dataToSend["Policy_Sales_Channel"]);
+    dataToSend["Response"] = -1;
     // fetch("http://host.docker.internal:8000/predict", {
     fetch("http://localhost:8000/predict", {
       method: 'POST',
