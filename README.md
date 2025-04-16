@@ -13,4 +13,5 @@
 ![image](https://github.com/user-attachments/assets/9477206d-06a9-4615-b9e2-1c6614536ea2)  
 Предыдущая гипотеза (использовать DecisionTreeClassifier) в server/model_train.ipynb  
 Но там точность ниже, так что в конченом решении используется именно XGBClassifier, но если интересно, то получились такие результаты  
-![image](https://github.com/user-attachments/assets/43f5b8f8-79fb-43e5-8f34-fb5b532873fb)
+![image](https://github.com/user-attachments/assets/43f5b8f8-79fb-43e5-8f34-fb5b532873fb)  
+### Ну и демо https://drive.google.com/file/d/1FRLaHhFT9S5Mz3b1wqaepdFzsSENmp25/view?usp=sharing
